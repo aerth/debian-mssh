@@ -7,8 +7,32 @@
 
 G_DEFINE_TYPE(MSSHWindow, mssh_window, GTK_TYPE_WINDOW)
 
+static void mssh_window_sendhost(GtkWidget *widget, gpointer data)
+{
+	int i;
+
+	MSSHWindow *window = MSSH_WINDOW(data);
+
+	for(i = 0; i < window->num_servers; i++)
+	{
+		if(window->terms[i] != NULL)
+		{
+			if(gtk_check_menu_item_get_active(
+				GTK_CHECK_MENU_ITEM(window->items[i])))
+			{
+				vte_terminal_feed_child(VTE_TERMINAL(window->terms[i]),
+					window->servers[i], strlen(window->servers[i]));
+			}
+		}
+	}
+}
+
 static void mssh_window_destroy(GtkWidget *widget, gpointer data)
 {
+	MSSHWindow *window = MSSH_WINDOW(data);
+
+	free(window->terms);
+	free(window->items);
 	gtk_main_quit();
 }
 
@@ -72,6 +96,8 @@ static void mssh_window_init(MSSHWindow* window)
 	window->file_item = gtk_menu_item_new_with_label("File");
 	window->file_quit = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT,
 		NULL);
+	window->file_sendhost = gtk_image_menu_item_new_with_label(
+		"Send hostname");
 
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(window->file_item),
 		window->file_menu);
@@ -79,9 +105,13 @@ static void mssh_window_init(MSSHWindow* window)
 		window->server_menu);
 
 	gtk_menu_shell_append(GTK_MENU_SHELL(window->file_menu),
+		window->file_sendhost);
+	gtk_menu_shell_append(GTK_MENU_SHELL(window->file_menu),
 		window->file_quit);
+	g_signal_connect(G_OBJECT(window->file_sendhost), "activate",
+		G_CALLBACK(mssh_window_sendhost), window);
 	g_signal_connect(G_OBJECT(window->file_quit), "activate",
-		G_CALLBACK(mssh_window_destroy), NULL);
+		G_CALLBACK(mssh_window_destroy), window);
 	gtk_widget_add_accelerator(window->file_quit, "activate", accel_group,
 		GDK_W, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
@@ -115,6 +145,11 @@ void mssh_window_new_session(MSSHWindow* window, char **env,
 	window->env = env;
 	window->num_servers = num_servers;
 	window->servers = servers;
+
+	window->items = malloc(sizeof(GtkWidget) * num_servers);
+	window->terms = malloc(sizeof(GtkWidget) * num_servers);
+	memset(window->items, 0, sizeof(GtkWidget) * num_servers);
+	memset(window->terms, 0, sizeof(GtkWidget) * num_servers);
 
 	args[0] = strdup("ssh");
 
