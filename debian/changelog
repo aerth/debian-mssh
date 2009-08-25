@@ -1,3 +1,11 @@
+mssh (0.2-1) unstable; urgency=low
+
+  * New upstream release. Closes: #543511.
+  * Update Standards-Version to 3.8.3.
+  * Add Vcs-* entries.
+
+ -- Bradley Smith <bradsmith@debian.org>  Tue, 25 Aug 2009 18:38:07 +0100
+
 mssh (0.1-1) unstable; urgency=low
 
   * Initial release. Closes: #539660.
