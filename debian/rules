@@ -16,9 +16,10 @@ configure: configure-stamp
 configure-stamp:
 	dh_testdir
 	LDFLAGS="$(LDFLAGS)" CFLAGS="$(CFLAGS)" ./configure \
-		--build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE) \
+		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE) \
 		--prefix=/usr --mandir=\$${prefix}/share/man \
-		--infodir=\$${prefix}/share/info
+		--infodir=\$${prefix}/share/info \
+		--with-gconf-schema-file-dir=/usr/share/gconf/schemas
 	touch $@
 
 build: build-stamp
@@ -38,7 +39,8 @@ install: build
 	dh_testdir
 	dh_testroot
 	dh_prep
-	$(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
+	$(MAKE) GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL=1 \
+		DESTDIR=$(CURDIR)/debian/tmp install
 	dh_install --fail-missing
 
 binary-indep: install
@@ -49,6 +51,7 @@ binary-arch: install
 	dh_installchangelogs ChangeLog
 	dh_installdocs
 	dh_installman
+	dh_gconf
 	dh_link
 	dh_strip
 	dh_compress
