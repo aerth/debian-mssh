@@ -1,11 +1,44 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <gconf/gconf-client.h>
 #include <gdk/gdkkeysyms.h>
 
+#include "mssh-terminal.h"
+#include "mssh-pref.h"
+#include "mssh-gconf.h"
 #include "mssh-window.h"
 
+#include "config.h"
+
+static void mssh_window_sendhost(GtkWidget *widget, gpointer data);
+static void mssh_window_destroy(GtkWidget *widget, gpointer data);
+static void mssh_window_pref(GtkWidget *widget, gpointer data);
+static gboolean mssh_window_key_press(GtkWidget *widget,
+	GdkEventKey *event, gpointer data);
+static gboolean mssh_window_entry_focused(GtkWidget *widget,
+	GtkDirectionType dir, gpointer data);
+static gboolean mssh_window_session_close(gpointer data);
+static void mssh_window_session_focused(MSSHTerminal *terminal,
+	gpointer data);
+static void mssh_window_insert(GtkWidget *widget, gchar *new_text,
+	gint new_text_length, gint *position, gpointer data);
+static void mssh_window_add_session(MSSHWindow *window, char *hostname);
+static void mssh_window_init(MSSHWindow* window);
+static void mssh_window_class_init(MSSHWindowClass *klass);
+
 G_DEFINE_TYPE(MSSHWindow, mssh_window, GTK_TYPE_WINDOW)
+
+struct WinTermPair
+{
+	MSSHWindow *window;
+	MSSHTerminal *terminal;
+};
+
+GtkWidget* mssh_window_new(void)
+{
+	return g_object_new(MSSH_TYPE_WINDOW, NULL);
+}
 
 static void mssh_window_sendhost(GtkWidget *widget, gpointer data)
 {
@@ -13,190 +46,332 @@ static void mssh_window_sendhost(GtkWidget *widget, gpointer data)
 
 	MSSHWindow *window = MSSH_WINDOW(data);
 
-	for(i = 0; i < window->num_servers; i++)
+	for(i = 0; i < window->terminals->len; i++)
 	{
-		if(window->terms[i] != NULL)
-		{
-			if(gtk_check_menu_item_get_active(
-				GTK_CHECK_MENU_ITEM(window->items[i])))
-			{
-				vte_terminal_feed_child(VTE_TERMINAL(window->terms[i]),
-					window->servers[i], strlen(window->servers[i]));
-			}
-		}
+		mssh_terminal_send_host(g_array_index(window->terminals,
+			MSSHTerminal*, i));
 	}
 }
 
 static void mssh_window_destroy(GtkWidget *widget, gpointer data)
 {
-	MSSHWindow *window = MSSH_WINDOW(data);
-
-	free(window->terms);
-	free(window->items);
 	gtk_main_quit();
 }
 
-GtkWidget* mssh_window_new(void)
+static void mssh_window_pref(GtkWidget *widget, gpointer data)
 {
-	return g_object_new(MSSH_TYPE_WINDOW, NULL);
+	MSSHWindow *window = MSSH_WINDOW(data);
+	GtkWidget *pref = mssh_pref_new();
+
+	gtk_window_set_transient_for(GTK_WINDOW(pref), GTK_WINDOW(window));
+	gtk_window_set_modal(GTK_WINDOW(pref), TRUE);
+	gtk_window_set_position(GTK_WINDOW(pref),
+		GTK_WIN_POS_CENTER_ON_PARENT);
+
+	gtk_widget_show_all(pref);
 }
 
-gboolean key_press(GtkWidget *widget, GdkEventKey *event,
-	gpointer user_data)
+static void mssh_window_insert(GtkWidget *widget, gchar *new_text,
+	gint new_text_length, gint *position, gpointer data)
 {
 	int i;
-	gboolean dummy;
 
-	MSSHWindow *window = MSSH_WINDOW(user_data);
+	MSSHWindow *window = MSSH_WINDOW(data);
 
-	for(i = 0; i < window->num_servers; i++)
+	for(i = 0; i < window->terminals->len; i++)
 	{
-		if(window->terms[i] != NULL)
-		{
-			if(gtk_check_menu_item_get_active(
-				GTK_CHECK_MENU_ITEM(window->items[i])))
-			{
-				g_signal_emit_by_name(window->terms[i], "key-press-event",
-					event, &dummy);
-			}
-		}
+		mssh_terminal_send_string(g_array_index(window->terminals,
+			MSSHTerminal*, i), new_text);
+	}
+
+	g_signal_stop_emission_by_name(G_OBJECT(widget), "insert-text");
+}
+
+static gboolean mssh_window_key_press(GtkWidget *widget,
+	GdkEventKey *event, gpointer data)
+{
+	int i;
+
+	MSSHWindow *window = MSSH_WINDOW(data);
+
+	for(i = 0; i < window->terminals->len; i++)
+	{
+		mssh_terminal_send_data(g_array_index(window->terminals,
+			MSSHTerminal*, i), event);
 	}
 
 	return TRUE;
 }
 
-void vte_child_exited(VteTerminal *vte, gpointer user_data)
+static gboolean mssh_window_entry_focused(GtkWidget *widget,
+	GtkDirectionType dir, gpointer data)
 {
-	int i;
-	char data[] = "\n[Child Exited]";
-	MSSHWindow *window = MSSH_WINDOW(user_data);
-	vte_terminal_feed(vte, data, strlen(data));
+	MSSHWindow *window = MSSH_WINDOW(data);
 
-	for(i = 0; i < window->num_servers; i++)
+	gtk_window_set_title(GTK_WINDOW(window), PACKAGE_NAME" - All");
+
+	return FALSE;
+}
+
+static gboolean mssh_window_session_close(gpointer data)
+{
+	int i, idx = -1;
+
+	struct WinTermPair *data_pair = (struct WinTermPair*)data;
+
+	for(i = 0; i < data_pair->window->terminals->len; i++)
 	{
-		if(window->terms[i] == GTK_WIDGET(vte))
+		if(data_pair->terminal == g_array_index(
+			data_pair->window->terminals, MSSHTerminal*, i))
 		{
-			window->terms[i] = NULL;
+			idx = i;
 			break;
 		}
 	}
+
+	if(idx == -1)
+	{
+		fprintf(stderr,
+			"mssh: Fatal Error: Can't find terminal to remove!\n");
+	}
+	else
+	{
+		gtk_widget_destroy(data_pair->terminal->menu_item);
+
+		gtk_container_remove(GTK_CONTAINER(data_pair->window->table),
+			GTK_WIDGET(data_pair->terminal));
+
+		g_array_remove_index(data_pair->window->terminals, idx);
+
+		mssh_window_relayout(data_pair->window);
+	}
+
+	if(data_pair->window->terminals->len == 0 &&
+		data_pair->window->exit_on_all_closed)
+	{
+		mssh_window_destroy(NULL, (void*)data_pair->window);
+	}
+
+	free(data_pair);
+
+	return FALSE;
+}
+
+void mssh_window_session_closed(MSSHTerminal *terminal, gpointer data)
+{
+	struct WinTermPair *data_pair = malloc(sizeof(struct WinTermPair));
+	data_pair->terminal = terminal;
+	data_pair->window = MSSH_WINDOW(data);
+
+	if(data_pair->window->close_ended_sessions)
+	{
+		g_timeout_add_seconds(data_pair->window->timeout,
+			mssh_window_session_close, data_pair);
+	}
+}
+
+static void mssh_window_session_focused(MSSHTerminal *terminal,
+	gpointer data)
+{
+	char *title;
+	size_t len;
+
+	MSSHWindow *window = MSSH_WINDOW(data);
+
+	len = strlen(PACKAGE_NAME" - ") + strlen(terminal->hostname) + 1;
+	title = malloc(len);
+
+	snprintf(title, len, PACKAGE_NAME" - %s", terminal->hostname);
+
+	gtk_window_set_title(GTK_WINDOW(window), title);
+
+	free(title);
+}
+
+void mssh_window_relayout(MSSHWindow *window)
+{
+	GConfClient *client;
+	GConfEntry *entry;
+	int i, len = window->terminals->len;
+	int cols = (len < window->columns) ? len : window->columns;
+	int rows = (len + 0.5) / cols;
+
+	for(i = 0; i < len; i++)
+	{
+		MSSHTerminal *terminal = g_array_index(window->terminals,
+			MSSHTerminal*, i);
+
+		g_object_ref(terminal);
+		if(GTK_WIDGET(terminal)->parent == GTK_WIDGET(window->table))
+		{
+			gtk_container_remove(GTK_CONTAINER(window->table),
+				GTK_WIDGET(terminal));
+		}
+
+		gtk_table_attach(GTK_TABLE(window->table), GTK_WIDGET(terminal),
+			(i % cols), (i == len - 1) ? cols : (i % cols) + 1, i / cols,
+			(i / cols) + 1,
+			GTK_FILL | GTK_EXPAND, GTK_FILL | GTK_EXPAND, 1, 1);
+		g_object_unref(terminal);
+
+		if(!terminal->started)
+		{
+			mssh_terminal_start_session(terminal, window->env);
+			terminal->started = 1;
+		}
+	}
+
+	if(len > 0)
+	{
+		gtk_table_resize(GTK_TABLE(window->table), rows, cols);
+	}
+
+	client = gconf_client_get_default();
+
+	gtk_widget_show_all(GTK_WIDGET(window));
+
+	entry = gconf_client_get_entry(client, MSSH_GCONF_KEY_FONT, NULL,
+		TRUE, NULL);
+	mssh_gconf_notify_font(client, 0, entry, window);
+	entry = gconf_client_get_entry(client, MSSH_GCONF_KEY_FG_COLOUR, NULL,
+		TRUE, NULL);
+	mssh_gconf_notify_fg_colour(client, 0, entry, window);
+	entry = gconf_client_get_entry(client, MSSH_GCONF_KEY_BG_COLOUR, NULL,
+		TRUE, NULL);
+	mssh_gconf_notify_bg_colour(client, 0, entry, window);
+}
+
+static void mssh_window_add_session(MSSHWindow *window, char *hostname)
+{
+	MSSHTerminal *terminal = MSSH_TERMINAL(mssh_terminal_new());
+
+	g_array_append_val(window->terminals, terminal);
+
+	g_signal_connect(G_OBJECT(terminal), "session-closed",
+		G_CALLBACK(mssh_window_session_closed), window);
+	g_signal_connect(G_OBJECT(terminal), "session-focused",
+		G_CALLBACK(mssh_window_session_focused), window);
+
+	mssh_terminal_init_session(terminal, hostname);
+
+	gtk_menu_shell_append(GTK_MENU_SHELL(window->server_menu),
+		terminal->menu_item);
 }
 
 static void mssh_window_init(MSSHWindow* window)
 {
-	GtkAccelGroup *accel_group;
+	GConfClient *client;
 
-	accel_group = gtk_accel_group_new();
-	window->vbox = gtk_vbox_new(FALSE, 0);
-	window->entry = gtk_entry_new();
-	window->menu_bar = gtk_menu_bar_new();
-	window->server_menu = gtk_menu_new();
-	window->file_menu = gtk_menu_new();
-	window->server_item = gtk_menu_item_new_with_label("Servers");
-	window->file_item = gtk_menu_item_new_with_label("File");
-	window->file_quit = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT,
-		NULL);
-	window->file_sendhost = gtk_image_menu_item_new_with_label(
+	GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
+	GtkWidget *entry = gtk_entry_new();
+
+	GtkWidget *menu_bar = gtk_menu_bar_new();
+	GtkWidget *file_menu = gtk_menu_new();
+	GtkWidget *edit_menu = gtk_menu_new();
+
+	GtkWidget *file_item = gtk_menu_item_new_with_label("File");
+	GtkWidget *edit_item = gtk_menu_item_new_with_label("Edit");
+	GtkWidget *server_item = gtk_menu_item_new_with_label("Servers");
+
+	GtkWidget *file_quit = gtk_image_menu_item_new_from_stock(
+		GTK_STOCK_QUIT, NULL);
+	GtkWidget *file_sendhost = gtk_image_menu_item_new_with_label(
 		"Send hostname");
+/*	GtkWidget *file_add = gtk_image_menu_item_new_with_label(
+		"Add session");*/
 
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(window->file_item),
-		window->file_menu);
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(window->server_item),
+	GtkWidget *edit_pref = gtk_image_menu_item_new_from_stock(
+		GTK_STOCK_PREFERENCES, NULL);
+
+	window->server_menu = gtk_menu_new();
+
+	window->terminals = g_array_new(FALSE, TRUE, sizeof(MSSHTerminal*));
+
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_item), file_menu);
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(edit_item), edit_menu);
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(server_item),
 		window->server_menu);
 
-	gtk_menu_shell_append(GTK_MENU_SHELL(window->file_menu),
-		window->file_sendhost);
-	gtk_menu_shell_append(GTK_MENU_SHELL(window->file_menu),
-		window->file_quit);
-	g_signal_connect(G_OBJECT(window->file_sendhost), "activate",
+/*	gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), file_add);*/
+	gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), file_sendhost);
+	gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), file_quit);
+	gtk_menu_shell_append(GTK_MENU_SHELL(edit_menu), edit_pref);
+	g_signal_connect(G_OBJECT(file_sendhost), "activate",
 		G_CALLBACK(mssh_window_sendhost), window);
-	g_signal_connect(G_OBJECT(window->file_quit), "activate",
+	g_signal_connect(G_OBJECT(file_quit), "activate",
 		G_CALLBACK(mssh_window_destroy), window);
-	gtk_widget_add_accelerator(window->file_quit, "activate", accel_group,
-		GDK_W, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-	gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
+	g_signal_connect(G_OBJECT(edit_pref), "activate",
+		G_CALLBACK(mssh_window_pref), window);
 
-	gtk_menu_bar_append(GTK_MENU_BAR(window->menu_bar),
-		window->file_item);
-	gtk_menu_bar_append(GTK_MENU_BAR(window->menu_bar),
-		window->server_item);
+	gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), file_item);
+	gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), edit_item);
+	gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), server_item);
 
-	g_signal_connect(G_OBJECT(window->entry), "key-press-event",
-		G_CALLBACK(key_press), window);
+	g_signal_connect(G_OBJECT(entry), "key-press-event",
+		G_CALLBACK(mssh_window_key_press), window);
+	g_signal_connect(G_OBJECT(entry), "insert-text",
+		G_CALLBACK(mssh_window_insert), window);
+	g_signal_connect(G_OBJECT(entry), "focus-in-event",
+		G_CALLBACK(mssh_window_entry_focused), window);
 
-	gtk_box_pack_start(GTK_BOX(window->vbox), window->menu_bar,
-		FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(window->vbox), window->entry,
-		FALSE, TRUE, 2);
+	gtk_box_pack_start(GTK_BOX(vbox), menu_bar, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), entry, FALSE, TRUE, 2);
 
-	gtk_container_add(GTK_CONTAINER(window), window->vbox);
+	window->table = gtk_table_new(1, 1, TRUE);
+	gtk_box_pack_start(GTK_BOX(vbox), window->table, TRUE, TRUE, 0);
+
+	gtk_container_add(GTK_CONTAINER(window), vbox);
 
 	gtk_widget_set_size_request(GTK_WIDGET(window), 1024, 768);
-	gtk_window_set_title(GTK_WINDOW(window), "MSSH");
+	gtk_window_set_title(GTK_WINDOW(window), PACKAGE_NAME);
+
+	client = gconf_client_get_default();
+
+	gconf_client_add_dir(client, MSSH_GCONF_PATH,
+		GCONF_CLIENT_PRELOAD_RECURSIVE, NULL);
+
+	gconf_client_notify_add(client, MSSH_GCONF_KEY_FONT,
+		mssh_gconf_notify_font, window, NULL, NULL);
+	gconf_client_notify_add(client, MSSH_GCONF_KEY_FG_COLOUR,
+		mssh_gconf_notify_fg_colour, window, NULL, NULL);
+	gconf_client_notify_add(client, MSSH_GCONF_KEY_BG_COLOUR,
+		mssh_gconf_notify_bg_colour, window, NULL, NULL);
+	gconf_client_notify_add(client, MSSH_GCONF_KEY_COLUMNS,
+		mssh_gconf_notify_columns, window, NULL, NULL);
+	gconf_client_notify_add(client, MSSH_GCONF_KEY_TIMEOUT,
+		mssh_gconf_notify_timeout, window, NULL, NULL);
+	gconf_client_notify_add(client, MSSH_GCONF_KEY_CLOSE_ENDED,
+		mssh_gconf_notify_close_ended, window, NULL, NULL);
+	gconf_client_notify_add(client, MSSH_GCONF_KEY_QUIT_ALL_ENDED,
+		mssh_gconf_notify_quit_all_ended, window, NULL, NULL);
+
+	gconf_client_notify(client, MSSH_GCONF_KEY_COLUMNS);
+	gconf_client_notify(client, MSSH_GCONF_KEY_TIMEOUT);
+	gconf_client_notify(client, MSSH_GCONF_KEY_CLOSE_ENDED);
+	gconf_client_notify(client, MSSH_GCONF_KEY_QUIT_ALL_ENDED);
 }
 
-void mssh_window_new_session(MSSHWindow* window, char **env,
-	int num_servers, char **servers)
+void mssh_window_start_session(MSSHWindow* window, char **env, int nhosts,
+	char **servers)
 {
-	char *args[3] = { NULL, NULL, NULL };
 	int i, j, k;
-	int rows = num_servers/2 + num_servers%2;
+	int rows = (nhosts / 2) + (nhosts % 2);
 
 	window->env = env;
-	window->num_servers = num_servers;
-	window->servers = servers;
-
-	window->items = malloc(sizeof(GtkWidget) * num_servers);
-	window->terms = malloc(sizeof(GtkWidget) * num_servers);
-	memset(window->items, 0, sizeof(GtkWidget) * num_servers);
-	memset(window->terms, 0, sizeof(GtkWidget) * num_servers);
-
-	args[0] = strdup("ssh");
-
-	window->table = gtk_table_new(rows, 2, TRUE);
-	gtk_box_pack_start(GTK_BOX(window->vbox), window->table,
-		TRUE, TRUE, 0);
 
 	for(i = 0; i < rows; i++)
 	{
 		for(j = 0; j < 2; j++)
 		{
 			k = j + i*2;
-			if(k < num_servers)
+			if(k < nhosts)
 			{
-				args[1] = window->servers[k];
-				window->terms[k] = vte_terminal_new();
-				g_signal_connect(G_OBJECT(window->terms[k]),
-					"child-exited", G_CALLBACK(vte_child_exited), window);
-				vte_terminal_fork_command(VTE_TERMINAL(window->terms[k]),
-					"ssh", args, window->env, NULL, FALSE, FALSE,
-					FALSE);
-				if((k == num_servers - 1) && (num_servers % 2 == 1))
-				{
-					gtk_table_attach(GTK_TABLE(window->table),
-						window->terms[k], j, j+2, i, i+1,
-						GTK_FILL | GTK_EXPAND, GTK_FILL | GTK_EXPAND, 2,
-						2);
-				}
-				else
-				{
-					gtk_table_attach(GTK_TABLE(window->table),
-						window->terms[k], j, j+1, i, i+1,
-						GTK_FILL | GTK_EXPAND, GTK_FILL | GTK_EXPAND, 2,
-						2);
-				}
-
-				window->items[k] = gtk_check_menu_item_new_with_label(
-					window->servers[k]);
-				gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
-					window->items[k]), TRUE);
-				gtk_menu_shell_append(GTK_MENU_SHELL(window->server_menu),
-					window->items[k]);
+				mssh_window_add_session(window, servers[k]);
 			}
 		}
 	}
 
-	free(args[0]);
+	mssh_window_relayout(window);
 }
 
 static void mssh_window_class_init(MSSHWindowClass *klass)
