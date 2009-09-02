@@ -45,7 +45,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_mssh_OBJECTS = mssh.$(OBJEXT) mssh-window.$(OBJEXT)
+am_mssh_OBJECTS = mssh.$(OBJEXT) mssh-terminal.$(OBJEXT) \
+	mssh-window.$(OBJEXT) mssh-pref.$(OBJEXT) mssh-gconf.$(OBJEXT)
 mssh_OBJECTS = $(am_mssh_OBJECTS)
 am__DEPENDENCIES_1 =
 mssh_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -79,6 +80,9 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EXEEXT = @EXEEXT@
+GCONFTOOL = @GCONFTOOL@
+GCONF_SCHEMA_CONFIG_SOURCE = @GCONF_SCHEMA_CONFIG_SOURCE@
+GCONF_SCHEMA_FILE_DIR = @GCONF_SCHEMA_FILE_DIR@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -150,9 +154,11 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CFLAGS = -pedantic-errors -Werror -Wall -Wfatal-errors -Wwrite-strings
 INCLUDES = $(MSSH_CFLAGS)
-mssh_SOURCES = mssh.c mssh-window.c
+mssh_SOURCES = mssh.c mssh-terminal.c mssh-window.c mssh-pref.c \
+	mssh-gconf.c
+
 mssh_LDADD = $(MSSH_LIBS)
-EXTRA_DIST = mssh-window.h
+EXTRA_DIST = mssh-window.h mssh-terminal.h mssh-pref.h mssh-gconf.h
 all: all-am
 
 .SUFFIXES:
@@ -234,6 +240,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mssh-gconf.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mssh-pref.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mssh-terminal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mssh-window.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mssh.Po@am__quote@
 
