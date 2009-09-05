@@ -49,6 +49,7 @@ binary-arch: install
 	dh_testdir
 	dh_testroot
 	dh_installchangelogs ChangeLog
+	dh_installexamples mssh_clusters.conf
 	dh_installdocs
 	dh_installman
 	dh_gconf

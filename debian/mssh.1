@@ -3,7 +3,7 @@
 mssh \- tool to administrate multiple servers at once
 .SH SYNOPSIS
 .B mssh
-[\fIOPTION\fR]... [\fIHOSTS\fR]
+[\fIOPTION\fR]... (-a \fIALIAS\fR | \fIHOSTS\fR)
 .SH DESCRIPTION
 .B MultiSSH
 is a GTK+ based ssh client to issue the same commands to multiple servers.
@@ -11,6 +11,9 @@ is a GTK+ based ssh client to issue the same commands to multiple servers.
 .B MultiSSH
 will connect to the servers specified in \fIHOSTS\fR.
 .SH OPTIONS
+.TP
+\fB-a\fR, \fB\-\-alias\fR=\fIALIAS\fR
+Open hosts associated with named alias
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 Display this help and exit

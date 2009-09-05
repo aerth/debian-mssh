@@ -1,3 +1,10 @@
+mssh (1.1-1) unstable; urgency=low
+
+  * New upstream release.
+    - Implement usage of aliases from config file. Closes: #544939.
+
+ -- Bradley Smith <bradsmith@debian.org>  Sat, 05 Sep 2009 16:30:14 +0100
+
 mssh (1.0-1) unstable; urgency=low
 
   * New upstream release. Closes: #543658, #543625, #543624.
