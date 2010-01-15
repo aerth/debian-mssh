@@ -1,3 +1,14 @@
+mssh (1.2-1) unstable; urgency=low
+
+  * New upstream release.
+    - Setup set_word_chars on VTE termianls properly. Closes: #565237.
+    - Correct terminal focus when a session closes. Closes: #565336.
+    - Add keyboard shortcuts for changing session focus. Closes: #565337.
+    - Add option to override column count. Closes: #565338.
+  * Thanks to Chris Lamb <lamby@debian.org> for above suggestions.
+
+ -- Bradley Smith <bradsmith@debian.org>  Fri, 15 Jan 2010 22:23:37 +0000
+
 mssh (1.1-1) unstable; urgency=low
 
   * New upstream release.
