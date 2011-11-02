@@ -1,3 +1,17 @@
+mssh (1.2-1.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Fix "FTBFS: mssh-terminal.c:49:5: error: 'vte_terminal_fork_command'
+    is deprecated (declared at /usr/include/vte-
+    0.0/vte/vtedeprecated.h:82) [-Werror=deprecated-declarations]":
+    apply patch from Ubuntu / Michael Vogt:
+    - fix ftbfs (LP: #756105)
+    (use vte_terminal_fork_command_full instead of the deprecated
+    vte_terminal_fork_command in src/mssh-terminal.c)
+    (Closes: #634426)
+
+ -- gregor herrmann <gregoa@debian.org>  Wed, 02 Nov 2011 19:32:56 +0100
+
 mssh (1.2-1) unstable; urgency=low
 
   * New upstream release.

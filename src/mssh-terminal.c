@@ -40,14 +40,23 @@ void mssh_terminal_init_session(MSSHTerminal *terminal, char *hostname)
 
 void mssh_terminal_start_session(MSSHTerminal *terminal, char **env)
 {
+    GError *error = NULL;
     char *args[3];
 
     args[0] = strdup("ssh");
     args[1] = terminal->hostname;
     args[2] = NULL;
 
-    vte_terminal_fork_command(VTE_TERMINAL(terminal), "ssh", args,
-        env, NULL, FALSE, FALSE, FALSE);
+    vte_terminal_fork_command_full(VTE_TERMINAL(terminal), 
+                                   VTE_PTY_NO_LASTLOG|VTE_PTY_NO_UTMP|VTE_PTY_NO_WTMP,
+                                   NULL,  /* working dir */
+                                   args,
+                                   env, 
+                                   G_SPAWN_SEARCH_PATH,
+                                   NULL,  /* child_setup */
+                                   NULL,  /* child_setup_data */
+                                   NULL,  /* *child_pid */
+                                   &error);
 
     free(args[0]);
 }
