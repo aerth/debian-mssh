@@ -1,11 +1,11 @@
-mssh (1.2-2) UNRELEASED; urgency=low
+mssh (1.2-2) unstable; urgency=low
 
   * QA upload
   * Set Maintainer to QA Group (O: #674885)
   * Set Vcs-Header to collab-maint repository (Closes: #626594)
   * Leave original Vcs-Headers with updated URLs as comments
 
- -- Axel Beckert <abe@debian.org>  Sat, 29 Dec 2012 21:23:38 +0100
+ -- Axel Beckert <abe@debian.org>  Sat, 29 Dec 2012 23:05:22 +0100
 
 mssh (1.2-1.1) unstable; urgency=low
 
