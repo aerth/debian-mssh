@@ -5,8 +5,10 @@ Maintainer: Debian QA Group <packages@qa.debian.org>
 Build-Depends: debhelper (>= 7), libgtk2.0-dev, libvte-dev, libgconf2-dev
 Standards-Version: 3.8.3
 Homepage: http://brad-smith.co.uk/
-Vcs-Git: http://git.brad-smith.co.uk/git/debian/pkg-mssh.git
-Vcs-Browser: http://git.brad-smith.co.uk/?p=debian/pkg-mssh.git
+Vcs-Git: git://anonscm.debian.org/collab-maint/pkg-mssh.git
+Vcs-Browser: http://anonscm.debian.org/gitweb/?p=collab-maint/pkg-mssh.git
+#Vcs-Git: http://git.brad-smith.co.uk/git/debian-old/mssh.git
+#Vcs-Browser: http://git.brad-smith.co.uk/?p=debian-old/mssh.git
 
 Package: mssh
 Architecture: any
