@@ -1,0 +1,39 @@
+Description: Fix FTBFS due to vte_terminal_fork_command being deprecated
+  Fix "FTBFS: mssh-terminal.c:49:5: error: 'vte_terminal_fork_command'
+  is deprecated (declared at /usr/include/vte-0.0/vte/vtedeprecated.h:82)
+  [-Werror=deprecated-declarations]"
+Author: Michael Vogt <michael.vogt@ubuntu.com>
+Origin: Ubuntu, https://launchpadlibrarian.net/79958381/mssh_1.2-1_1.2-1ubuntu1.diff.gz
+Bug-Debian: http://bugs.debian.org/634426
+Bug-Ubuntu: https://launchpad.net/bugs/756105
+Reviewed-By: gregor herrmann <gregoa@debian.org>
+Last-Update: 2011-11-02
+
+--- mssh-1.2.orig/src/mssh-terminal.c
++++ mssh-1.2/src/mssh-terminal.c
+@@ -40,14 +40,23 @@ void mssh_terminal_init_session(MSSHTerm
+ 
+ void mssh_terminal_start_session(MSSHTerminal *terminal, char **env)
+ {
++    GError *error = NULL;
+     char *args[3];
+ 
+     args[0] = strdup("ssh");
+     args[1] = terminal->hostname;
+     args[2] = NULL;
+ 
+-    vte_terminal_fork_command(VTE_TERMINAL(terminal), "ssh", args,
+-        env, NULL, FALSE, FALSE, FALSE);
++    vte_terminal_fork_command_full(VTE_TERMINAL(terminal), 
++                                   VTE_PTY_NO_LASTLOG|VTE_PTY_NO_UTMP|VTE_PTY_NO_WTMP,
++                                   NULL,  /* working dir */
++                                   args,
++                                   env, 
++                                   G_SPAWN_SEARCH_PATH,
++                                   NULL,  /* child_setup */
++                                   NULL,  /* child_setup_data */
++                                   NULL,  /* *child_pid */
++                                   &error);
+ 
+     free(args[0]);
+ }
