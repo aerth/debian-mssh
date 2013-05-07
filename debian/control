@@ -3,7 +3,7 @@ Section: admin
 Priority: optional
 Maintainer: Debian QA Group <packages@qa.debian.org>
 Build-Depends: debhelper (>= 9~), libgtk2.0-dev, libvte-dev, libgconf2-dev
-Standards-Version: 3.8.3
+Standards-Version: 3.9.4
 Homepage: http://brad-smith.co.uk/
 Vcs-Git: git://anonscm.debian.org/collab-maint/pkg-mssh.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=collab-maint/pkg-mssh.git
