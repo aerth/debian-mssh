@@ -10,6 +10,10 @@ mssh (1.2-4) UNRELEASED; urgency=low
     + Build-depend on autotools-dev
   * Add some files which are potentially leftovers of unsuccessful builds
     to debian/clean.
+  * Upstream's (and hence the former maintainer's) website is empty and
+    the DNS record for his FTP server no more exists.
+    + Comment out ftp.brad-smith.co.uk in watch file
+    + Comment out Homepage header
 
  -- Axel Beckert <abe@debian.org>  Sun, 30 Jun 2013 11:45:01 +0200
 
