@@ -8,6 +8,8 @@ mssh (1.2-4) UNRELEASED; urgency=low
   * Update config.{sub,guess} using dh_autotools-dev_updateconfig to avoid
     FTBFS due to outdated config.{sub,guess}.
     + Build-depend on autotools-dev
+  * Add some files which are potentially leftovers of unsuccessful builds
+    to debian/clean.
 
  -- Axel Beckert <abe@debian.org>  Sun, 30 Jun 2013 11:45:01 +0200
 
