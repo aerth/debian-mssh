@@ -1,5 +1,6 @@
-mssh (1.2-4) UNRELEASED; urgency=low
+mssh (1.2-4) unstable; urgency=low
 
+  * QA upload
   * Fix FTBFS with current toolchain by removing -pedantic-error from
     CFLAGS. (Closes: #714438) The patch additionally removes -Werror from
     CFLAGS, too, to avoid similar FTBFS, at least while the package is
@@ -15,7 +16,7 @@ mssh (1.2-4) UNRELEASED; urgency=low
     + Comment out ftp.brad-smith.co.uk in watch file
     + Comment out Homepage header
 
- -- Axel Beckert <abe@debian.org>  Sun, 30 Jun 2013 11:45:01 +0200
+ -- Axel Beckert <abe@debian.org>  Sun, 30 Jun 2013 19:16:46 +0200
 
 mssh (1.2-3) unstable; urgency=low
 
