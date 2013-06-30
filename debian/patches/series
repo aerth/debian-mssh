@@ -1,1 +1,2 @@
 fix-ftbfs-vte_terminal_fork_command-is-deprecated.patch
+remove-dash-W-error.patch

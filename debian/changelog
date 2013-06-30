@@ -1,5 +1,9 @@
 mssh (1.2-4) UNRELEASED; urgency=low
 
+  * Fix FTBFS with current toolchain by removing -pedantic-error from
+    CFLAGS. (Closes: #714438) The patch additionally removes -Werror from
+    CFLAGS, too, to avoid similar FTBFS, at least while the package is
+    orphaned.
   * Apply wrap-and-sort
 
  -- Axel Beckert <abe@debian.org>  Sun, 30 Jun 2013 11:45:01 +0200

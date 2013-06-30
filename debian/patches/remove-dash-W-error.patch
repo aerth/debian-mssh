@@ -1,0 +1,36 @@
+Description: Remove -pedantic-errors -Werror from CFLAGS
+ Both, -Werror and -pedantic-errors in CFLAGS are bound to cause FTBFS
+ quite often, so this patch no more causes warnings to behave as error
+ by default.
+ .
+ Doing this via patch has been chosen over -Wno-error to not undo
+ dpkg-buildflags' -Werror=format-security.
+ .
+ This patch should be removed once the package is no more orphaned
+ (#674885) and pango's pango-font.h is fixed with regards to #713594.
+Author: Axel Beckert <abe@debian.org>
+Debian-Bug: 714438
+
+Index: mssh/src/Makefile.am
+===================================================================
+--- mssh.orig/src/Makefile.am	2013-06-23 20:07:02.172028112 +0200
++++ mssh/src/Makefile.am	2013-06-30 11:49:56.299047136 +0200
+@@ -1,4 +1,4 @@
+-AM_CFLAGS = -pedantic-errors -Werror -Wall -Wfatal-errors -Wwrite-strings
++AM_CFLAGS = -Wall -Wfatal-errors -Wwrite-strings
+ 
+ INCLUDES = $(MSSH_CFLAGS)
+ 
+Index: mssh/src/Makefile.in
+===================================================================
+--- mssh.orig/src/Makefile.in	2013-06-23 20:07:02.176028054 +0200
++++ mssh/src/Makefile.in	2013-06-30 11:50:08.835699354 +0200
+@@ -152,7 +152,7 @@
+ top_build_prefix = @top_build_prefix@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+-AM_CFLAGS = -pedantic-errors -Werror -Wall -Wfatal-errors -Wwrite-strings
++AM_CFLAGS = -Wall -Wfatal-errors -Wwrite-strings
+ INCLUDES = $(MSSH_CFLAGS)
+ mssh_SOURCES = mssh.c mssh-terminal.c mssh-window.c mssh-pref.c \
+ 	mssh-gconf.c
