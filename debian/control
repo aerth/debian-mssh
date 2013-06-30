@@ -2,7 +2,8 @@ Source: mssh
 Section: admin
 Priority: optional
 Maintainer: Debian QA Group <packages@qa.debian.org>
-Build-Depends: debhelper (>= 9~),
+Build-Depends: autotools-dev,
+               debhelper (>= 9~),
                libgconf2-dev,
                libgtk2.0-dev,
                libvte-dev
