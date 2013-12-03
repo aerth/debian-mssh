@@ -1,3 +1,9 @@
+mssh (1.2-5) UNRELEASED; urgency=low
+
+  * Fix --with autotools_dev usage (c.f. #731248)
+
+ -- Axel Beckert <abe@debian.org>  Tue, 03 Dec 2013 17:02:30 +0100
+
 mssh (1.2-4) unstable; urgency=low
 
   * QA upload
