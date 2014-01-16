@@ -1,3 +1,14 @@
+mssh (1.3-1) unstable; urgency=low
+
+  * New maintainer. Closes: #674885.
+  * New upstream release.
+    - Supports comments on configuration archive.
+    - Document on man page where aliases are defined. Closes: #583807.
+    - Can specify conection port number on command line. Closes: #729881.
+    - Allow window to be smaller than 1024x768. Closes: #654954.
+
+ -- Héctor <hector@debian.org>  Wed, 15 Jan 2014 18:12:21 +0100
+
 mssh (1.2-1) unstable; urgency=low
 
   * New upstream release.
