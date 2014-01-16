@@ -1,7 +1,7 @@
 Source: mssh
 Section: admin
 Priority: optional
-Maintainer: Héctor García <hector@debian.org>
+Maintainer: Hector Garcia <hector@debian.org>
 Build-Depends: debhelper (>= 7), libgtk2.0-dev, libvte-dev, libgconf2-dev
 Standards-Version: 3.8.3
 Homepage: http://brad-smith.co.uk/
