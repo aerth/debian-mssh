@@ -136,7 +136,7 @@ gboolean mssh_window_focus(GtkWidget *widget, GObject *acceleratable,
         }
     }
 
-    if(focus == window->global_entry && keyval == GDK_Down &&
+    if(focus == window->global_entry && keyval == GDK_KEY_Down &&
         window->dir_focus)
         idx = 0;
     else if(idx == -1 && window->dir_focus)
@@ -145,11 +145,11 @@ gboolean mssh_window_focus(GtkWidget *widget, GObject *acceleratable,
     {
         switch(keyval)
         {
-        case GDK_Up:
+        case GDK_KEY_Up:
             if(window->dir_focus)
                 idx = idx - cols;
             break;
-        case GDK_Down:
+        case GDK_KEY_Down:
             if(window->dir_focus)
             {
                 if((idx + cols >= len) && (idx < len -
@@ -159,11 +159,11 @@ gboolean mssh_window_focus(GtkWidget *widget, GObject *acceleratable,
                     idx = idx + cols;
             }
             break;
-        case GDK_Left:
+        case GDK_KEY_Left:
             if(idx % cols != 0 || !window->dir_focus)
                 idx = idx - 1;
             break;
-        case GDK_Right:
+        case GDK_KEY_Right:
             if(idx % cols != cols - 1 || !window->dir_focus)
                 idx = idx + 1;
             break;
@@ -304,7 +304,7 @@ void mssh_window_relayout(MSSHWindow *window)
             MSSHTerminal*, i);
 
         g_object_ref(terminal);
-        if(GTK_WIDGET(terminal)->parent == GTK_WIDGET(window->table))
+        if(gtk_widget_get_parent(GTK_WIDGET(terminal)) == GTK_WIDGET(window->table))
         {
             gtk_container_remove(GTK_CONTAINER(window->table),
                 GTK_WIDGET(terminal));
@@ -415,9 +415,9 @@ static void mssh_window_init(MSSHWindow* window)
     g_signal_connect(G_OBJECT(edit_pref), "activate",
         G_CALLBACK(mssh_window_pref), window);
 
-    gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), file_item);
-    gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), edit_item);
-    gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), server_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), file_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), edit_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), server_item);
 
     g_signal_connect(G_OBJECT(entry), "key-press-event",
         G_CALLBACK(mssh_window_key_press), window);
@@ -434,7 +434,8 @@ static void mssh_window_init(MSSHWindow* window)
 
     gtk_container_add(GTK_CONTAINER(window), vbox);
 
-    gtk_widget_set_size_request(GTK_WIDGET(window), 1024, 768);
+    gtk_widget_set_size_request(GTK_WIDGET(window), 0, 0);
+    gtk_window_set_default_size(GTK_WINDOW(window), 1024, 768);
     gtk_window_set_title(GTK_WINDOW(window), PACKAGE_NAME);
 
     client = gconf_client_get_default();
@@ -468,16 +469,16 @@ static void mssh_window_init(MSSHWindow* window)
     gconf_client_notify(client, MSSH_GCONF_KEY_DIR_FOCUS);
     gconf_client_notify(client, MSSH_GCONF_KEY_MODIFIER);
 
-    gtk_accel_group_connect(accel, GDK_Up, window->modifier,
+    gtk_accel_group_connect(accel, GDK_KEY_Up, window->modifier,
         GTK_ACCEL_VISIBLE, g_cclosure_new(
         G_CALLBACK(mssh_window_focus), window, NULL));
-    gtk_accel_group_connect(accel, GDK_Down, window->modifier,
+    gtk_accel_group_connect(accel, GDK_KEY_Down, window->modifier,
         GTK_ACCEL_VISIBLE, g_cclosure_new(
         G_CALLBACK(mssh_window_focus), window, NULL));
-    gtk_accel_group_connect(accel, GDK_Left, window->modifier,
+    gtk_accel_group_connect(accel, GDK_KEY_Left, window->modifier,
         GTK_ACCEL_VISIBLE, g_cclosure_new(
         G_CALLBACK(mssh_window_focus), window, NULL));
-    gtk_accel_group_connect(accel, GDK_Right, window->modifier,
+    gtk_accel_group_connect(accel, GDK_KEY_Right, window->modifier,
         GTK_ACCEL_VISIBLE, g_cclosure_new(
         G_CALLBACK(mssh_window_focus), window, NULL));
 
