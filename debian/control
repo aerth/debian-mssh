@@ -4,8 +4,8 @@ Priority: optional
 Maintainer: Hector Garcia <hector@debian.org>
 Build-Depends: debhelper (>= 7), libgtk2.0-dev, libvte-dev, libgconf2-dev
 Standards-Version: 3.8.3
-Homepage: http://brad-smith.co.uk/
-Vcs-Git: http://baloo.dyndns.biz/gitweb/?p=mssh.git;a=summary
+Homepage: http://baloo.dyndns.biz
+Vcs-Git: git://baloo.dyndns.biz/mssh.git
 Vcs-Browser: http://baloo.dyndns.biz/gitweb/?p=mssh.git;a=summary
 
 Package: mssh
