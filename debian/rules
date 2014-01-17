@@ -52,6 +52,7 @@ binary-arch: install
 	dh_installexamples mssh_clusters.conf
 	dh_installdocs
 	dh_installman
+	dh_bash-completion
 	dh_gconf
 	dh_link
 	dh_strip

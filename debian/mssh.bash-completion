@@ -3,8 +3,12 @@
 
 _mssh_alias()
 {
-  COMPREPLY=( $( compgen -W '$( command cat ~/.mssh_clusters 2>/dev/null \
-     | grep -v "^\s*$" | grep -v "^#" | sed -e "s/:.*$//" )' -- $cur ) )
+  if [ -f ~/.mssh_clusters ]; then
+    COMPREPLY=( $( compgen -W '$( command cat ~/.mssh_clusters 2>/dev/null \
+       | grep -v "^\s*$" | grep -v "^#" | sed -e "s/:.*$//" )' -- $cur ) )
+  fi
+
+  return 0
 }  
 
 _mssh()
