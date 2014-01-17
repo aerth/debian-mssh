@@ -6,6 +6,7 @@ mssh (1.3-1) unstable; urgency=low
     - Document on man page where aliases are defined. Closes: #583807.
     - Can specify conection port number on command line. Closes: #729881.
     - Allow window to be smaller than 1024x768. Closes: #654954.
+  * Added bash_completion file. Closes: #635226.
 
  -- Hector Garcia <hector@debian.org>  Wed, 15 Jan 2014 18:12:21 +0100
 
