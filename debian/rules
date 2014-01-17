@@ -22,6 +22,8 @@ configure-stamp:
 		--with-gconf-schema-file-dir=/usr/share/gconf/schemas
 	touch $@
 
+build-arch: build-stamp
+build-indep: build-stamp
 build: build-stamp
 build-stamp: configure
 	dh_testdir

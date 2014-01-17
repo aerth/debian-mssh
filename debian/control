@@ -3,10 +3,10 @@ Section: admin
 Priority: optional
 Maintainer: Hector Garcia <hector@debian.org>
 Build-Depends: debhelper (>= 7), libgtk2.0-dev, libvte-dev, libgconf2-dev
-Standards-Version: 3.8.3
+Standards-Version: 3.9.5
 Homepage: http://baloo.dyndns.biz
-Vcs-Git: git://baloo.dyndns.biz/mssh.git
-Vcs-Browser: http://baloo.dyndns.biz/gitweb/?p=mssh.git;a=summary
+Vcs-Git: git://baloo.dyndns.biz/mssh.git -b gtk2
+Vcs-Browser: http://baloo.dyndns.biz/gitweb/?p=mssh.git;a=shortlog;h=refs/heads/gtk2
 
 Package: mssh
 Architecture: any
