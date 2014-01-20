@@ -30,6 +30,7 @@ License: BSD
 
 Files: debian/*
 Copyright: (C) 2009 Bradley Smith <brad@brad-smith.co.uk>
+Copyright: (C) 2012, 2013 Axel Beckert <abe@debian.org>
 License: BSD
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are

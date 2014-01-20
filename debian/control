@@ -2,7 +2,12 @@ Source: mssh
 Section: admin
 Priority: optional
 Maintainer: Hector Garcia <hector@debian.org>
-Build-Depends: debhelper (>= 7), libgtk2.0-dev, libvte-dev, libgconf2-dev, bash-completion
+Build-Depends: autotools-dev,
+               bash-completion,
+               debhelper (>= 9~),
+               libgconf2-dev,
+               libgtk2.0-dev,
+               libvte-dev
 Standards-Version: 3.9.5
 Homepage: http://baloo.dyndns.biz
 Vcs-Git: git://baloo.dyndns.biz/mssh.git -b gtk2
@@ -10,7 +15,9 @@ Vcs-Browser: http://baloo.dyndns.biz/gitweb/?p=mssh.git;a=shortlog;h=refs/heads/
 
 Package: mssh
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, openssh-client
+Depends: openssh-client,
+         ${misc:Depends},
+         ${shlibs:Depends}
 Description: tool to administrate multiple servers at once
  MultiSSH is a GTK+ based SSH client designed to connect to multiple
  servers and issue to same commands to each server, making administering

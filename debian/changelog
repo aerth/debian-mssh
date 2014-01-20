@@ -11,6 +11,61 @@ mssh (1.3-1) unstable; urgency=low
 
  -- Hector Garcia <hector@debian.org>  Wed, 15 Jan 2014 18:12:21 +0100
 
+mssh (1.2-4) unstable; urgency=low
+
+  * QA upload
+  * Fix FTBFS with current toolchain by removing -pedantic-error from
+    CFLAGS. (Closes: #714438) The patch additionally removes -Werror from
+    CFLAGS, too, to avoid similar FTBFS, at least while the package is
+    orphaned.
+  * Apply wrap-and-sort
+  * Update config.{sub,guess} using dh_autotools-dev_updateconfig to avoid
+    FTBFS due to outdated config.{sub,guess}.
+    + Build-depend on autotools-dev
+  * Add some files which are potentially leftovers of unsuccessful builds
+    to debian/clean.
+  * Upstream's (and hence the former maintainer's) website is empty and
+    the DNS record for his FTP server no more exists.
+    + Comment out ftp.brad-smith.co.uk in watch file
+    + Comment out Homepage header
+
+ -- Axel Beckert <abe@debian.org>  Sun, 30 Jun 2013 19:16:46 +0200
+
+mssh (1.2-3) unstable; urgency=low
+
+  * QA upload
+  * Switch to dh7 style debian/rules
+    - Bump debhelper compatibility to 9, update debhelper build dependency
+    - Fixes lintian warning debian-rules-missing-recommended-target
+  * Switch to source format "3.0 (quilt)"
+  * Bump Standards-Version to 3.9.4 (no changes)
+  * Fix lintian warning hyphen-used-as-minus-sign.
+
+ -- Axel Beckert <abe@debian.org>  Tue, 07 May 2013 02:08:55 +0200
+
+mssh (1.2-2) unstable; urgency=low
+
+  * QA upload
+  * Set Maintainer to QA Group (O: #674885)
+  * Set Vcs-Header to collab-maint repository (Closes: #626594)
+  * Leave original Vcs-Headers with updated URLs as comments
+
+ -- Axel Beckert <abe@debian.org>  Sat, 29 Dec 2012 23:05:22 +0100
+
+mssh (1.2-1.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Fix "FTBFS: mssh-terminal.c:49:5: error: 'vte_terminal_fork_command'
+    is deprecated (declared at /usr/include/vte-
+    0.0/vte/vtedeprecated.h:82) [-Werror=deprecated-declarations]":
+    apply patch from Ubuntu / Michael Vogt:
+    - fix ftbfs (LP: #756105)
+    (use vte_terminal_fork_command_full instead of the deprecated
+    vte_terminal_fork_command in src/mssh-terminal.c)
+    (Closes: #634426)
+
+ -- gregor herrmann <gregoa@debian.org>  Wed, 02 Nov 2011 19:32:56 +0100
+
 mssh (1.2-1) unstable; urgency=low
 
   * New upstream release.
