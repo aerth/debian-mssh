@@ -1,0 +1,11 @@
+--- a/mssh.1
++++ b/mssh.1
+@@ -3,7 +3,7 @@
+ mssh \- tool to administrate multiple servers at once
+ .SH SYNOPSIS
+ .B mssh
+-[\fIOPTION\fR]... (-a \fIALIAS\fR | \fIHOSTS\fR[\fI:PORT\fR])
++[\fIOPTION\fR]... (\-a \fIALIAS\fR | \fIHOSTS\fR[\fI:PORT\fR])
+ .SH DESCRIPTION
+ .B MultiSSH
+ is a GTK+ based ssh client to issue the same commands to multiple servers.
