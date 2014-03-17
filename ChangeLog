@@ -1,28 +1,52 @@
+2014-03-14  Héctor García  <hector@debian.org>
+
+	Added support to defined backscroll lines for terminals. Patch from Balint Deak.
+
+	Added support to maximize a terminal (ctrl + shift + x). Patch from Balint Deak.
+
+	Added support to change bg y fg colors on selected terminal. Patch from Balint Deak.
+
+	Added support to create a new session. Patch from Balint Deak.
+
+2014-03-13  Héctor García  <hector@debian.org>
+
+	Added a new feature to the aliases file. Now you can define aliases for command line text to send using {}
+
 2014-01-20  Héctor García  <hector@debian.org>
 
-    Make paste with mouse middle button focus on terminal
+	Make paste with mouse middle button focus on terminal
 
 2014-01-15  Héctor García  <hector@debian.org>
 
-    Added patch from Oscar Fernandez to support comments on configuration archive
+	Added patch from Oscar Fernandez to support comments on configuration archive
 
-    Added patch from Mario J. Barchéin and Francisco Licerán to support port numbers on host
+	Added patch from Mario J. Barchéin and Francisco Licerán to support port numbers on host
 
-    Copy Debian's mssh man page to upstream and added Karl Goetz <karl@kgoetz.id.au> patch
+	Copy Debian's mssh man page to upstream and added Karl Goetz <karl@kgoetz.id.au> patch
 
-    Allow window to be smaller than 1024x768. Patch from Lorenzo Masini <rugginoso@develer.com>
+	Allow window to be smaller than 1024x768. Patch from Lorenzo Masini <rugginoso@develer.com>
 
 2014-01-15  Héctor García  <hector@debian.org>
 
-    Bumped version to 1.3 gtk2 deprecated symbols free
+	Bumped version to 2.0 gtk3 support
 
-    Replaced GDK_<keyname> with GDK_KEY_<keyname>
+	Changed from gdk_color_ to gdk_rgba_ functions
 
-    Changed direct access to use accessor for terminal->parent
+	Changed from gtk_color_button to gtk_color_chooser
 
-    Changed deprecated gtk_menu_bar_append with gtk_menu_shell_append
+	Change from gtk_vbox and gtk_hbox to gtk_box
 
-    Migrate from vte_terminal_fork_command to vte_terminal_fork_command_full to make compile against GTK 2.24
+	Change colour_table from GTK_TABLE to GTK_GRID
+
+	Change table where to place terminals to grid
+
+	Replaced GDK_<keyname> with GDK_KEY_<keyname>
+
+	Changed direct access to use accessor for terminal->parent
+
+	Changed deprecated gtk_menu_bar_append with gtk_menu_shell_append
+
+	Migrate from vte_terminal_fork_command to vte_terminal_fork_command_full to make compile against GTK 2.24
 
 2010-01-15  Bradley Smith  <brad@brad-smith.co.uk>
 

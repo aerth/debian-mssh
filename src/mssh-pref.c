@@ -36,13 +36,13 @@ static void mssh_pref_font_select(GtkWidget *widget, gpointer data)
 static void mssh_pref_fg_colour_select(GtkWidget *widget, gpointer data)
 {
     GConfClient *client;
-    GdkColor colour;
+    GdkRGBA colour;
     const gchar *colour_s;
 
     client = gconf_client_get_default();
 
-    gtk_color_button_get_color(GTK_COLOR_BUTTON(widget), &colour);
-    colour_s = gdk_color_to_string(&colour);
+    gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &colour);
+    colour_s = gdk_rgba_to_string(&colour);
 
     gconf_client_set_string(client, MSSH_GCONF_KEY_FG_COLOUR, colour_s,
         NULL);
@@ -51,18 +51,48 @@ static void mssh_pref_fg_colour_select(GtkWidget *widget, gpointer data)
 static void mssh_pref_bg_colour_select(GtkWidget *widget, gpointer data)
 {
     GConfClient *client;
-    GdkColor colour;
+    GdkRGBA colour;
     const gchar *colour_s;
 
     client = gconf_client_get_default();
 
-    gtk_color_button_get_color(GTK_COLOR_BUTTON(widget), &colour);
-    colour_s = gdk_color_to_string(&colour);
+    gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &colour);
+    colour_s = gdk_rgba_to_string(&colour);
 
     gconf_client_set_string(client, MSSH_GCONF_KEY_BG_COLOUR, colour_s,
         NULL);
 }
 
+static void mssh_pref_fg_colour_select_focus(GtkWidget *widget, gpointer data)
+{
+    GConfClient *client;
+    GdkRGBA colour;
+    const gchar *colour_s;
+
+    client = gconf_client_get_default();
+
+    gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &colour);
+    colour_s = gdk_rgba_to_string(&colour);
+
+
+    gconf_client_set_string(client, MSSH_GCONF_KEY_FG_COLOUR_FOCUS, colour_s,
+        NULL);
+}
+
+static void mssh_pref_bg_colour_select_focus(GtkWidget *widget, gpointer data)
+{
+    GConfClient *client;
+    GdkRGBA colour;
+    const gchar *colour_s;
+
+    client = gconf_client_get_default();
+
+    gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &colour);
+    colour_s = gdk_rgba_to_string(&colour);
+
+    gconf_client_set_string(client, MSSH_GCONF_KEY_BG_COLOUR_FOCUS, colour_s,
+        NULL);
+}
 static void mssh_pref_columns_select(GtkWidget *widget, gpointer data)
 {
     GConfClient *client;
@@ -75,6 +105,17 @@ static void mssh_pref_columns_select(GtkWidget *widget, gpointer data)
     gconf_client_set_int(client, MSSH_GCONF_KEY_COLUMNS, columns, NULL);
 }
 
+static void mssh_pref_backscroll_buffer_size_select(GtkWidget *widget, gpointer data)
+{
+    GConfClient *client;
+    gint backscroll_buffer_size;
+
+    client = gconf_client_get_default();
+
+    backscroll_buffer_size = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+
+    gconf_client_set_int(client, MSSH_GCONF_KEY_BACKSCROLL_BUFFER_SIZE, backscroll_buffer_size, NULL);
+}
 static void mssh_pref_timeout_select(GtkWidget *widget, gpointer data)
 {
     GConfClient *client;
@@ -99,6 +140,17 @@ static void mssh_pref_close_check(GtkWidget *widget, gpointer data)
     gconf_client_set_bool(client, MSSH_GCONF_KEY_CLOSE_ENDED, close, NULL);
 }
 
+static void mssh_pref_recolor_focused_check(GtkWidget *widget, gpointer data)
+{
+    GConfClient *client;
+    gboolean recolor_focused;
+
+    client = gconf_client_get_default();
+
+    recolor_focused = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+
+    gconf_client_set_bool(client, MSSH_GCONF_KEY_RECOLOR_FOCUSED, recolor_focused, NULL);
+}
 static void mssh_pref_exit_check(GtkWidget *widget, gpointer data)
 {
     GConfClient *client;
@@ -149,52 +201,63 @@ static void mssh_pref_init(MSSHPref* pref)
     GConfClient *client;
     GConfEntry *entry;
     GConfValue *value;
-    GdkVisual *visual = gdk_visual_get_system();
-    GdkColormap *colour_map = gdk_colormap_new(visual, TRUE);
-    GdkColor colour;
+    GdkRGBA colour;
     const gchar *colour_s;
 
-    GtkWidget *frame = gtk_vbox_new(FALSE, 5);
+    GtkWidget *frame = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     GtkWidget *notebook = gtk_notebook_new();
-    GtkWidget *content = gtk_vbox_new(FALSE, 4);
+    GtkWidget *content = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
 
-    GtkWidget *font_hbox = gtk_hbox_new(FALSE, 10);
+    GtkWidget *font_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     GtkWidget *font_label = gtk_label_new("Font:");
     GtkWidget *font_select = gtk_font_button_new();
 
-    GtkWidget *colour_table = gtk_table_new(2, 2, FALSE);
+    GtkWidget *colour_table = gtk_grid_new();
     GtkWidget *bg_colour_label = gtk_label_new("Background:");
     GtkWidget *bg_colour_select = gtk_color_button_new();
     GtkWidget *fg_colour_label = gtk_label_new("Foreground:");
     GtkWidget *fg_colour_select = gtk_color_button_new();
 
+    GtkWidget *recolor_focused_check = gtk_check_button_new_with_label(
+        "Use different color for focused window");
+
+    GtkWidget *colour_table_focus = gtk_grid_new();
+    GtkWidget *bg_colour_label_focus = gtk_label_new("Background for focused window:");
+    GtkWidget *bg_colour_select_focus = gtk_color_button_new();
+    GtkWidget *fg_colour_label_focus = gtk_label_new("Foreground for focused window:");
+    GtkWidget *fg_colour_select_focus = gtk_color_button_new();
     GtkWidget *exit_check = gtk_check_button_new_with_label(
         "Quit after all sessions have ended");
     GtkWidget *close_check = gtk_check_button_new_with_label(
         "Close ended sessions");
 
-    GtkWidget *timeout_hbox = gtk_hbox_new(FALSE, 10);
+    GtkWidget *timeout_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     GtkWidget *timeout_label1 = gtk_label_new(
         "Closed ended sessions after");
-    GtkObject *timeout_adj = gtk_adjustment_new(3, 0, 100, 1, 10, 0);
+    GtkAdjustment *timeout_adj = gtk_adjustment_new(3, 0, 100, 1, 10, 0);
     GtkWidget *timeout_select = gtk_spin_button_new(
         GTK_ADJUSTMENT(timeout_adj), 1, 0);
     GtkWidget *timeout_label2 = gtk_label_new("seconds");
 
-    GtkWidget *columns_hbox = gtk_hbox_new(FALSE, 10);
+    GtkWidget *columns_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     GtkWidget *columns_label = gtk_label_new("Columns:");
-    GtkObject *columns_adj = gtk_adjustment_new(2, 1, 10, 1, 10, 0);
+    GtkAdjustment *columns_adj = gtk_adjustment_new(2, 1, 10, 1, 10, 0);
     GtkWidget *columns_select = gtk_spin_button_new(
         GTK_ADJUSTMENT(columns_adj), 1, 0);
 
-    GtkWidget *mod_hbox = gtk_hbox_new(FALSE, 10);
+    GtkWidget *backscroll_buffer_size_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    GtkWidget *backscroll_buffer_size_label = gtk_label_new("Scrollback Lines:");
+    GtkAdjustment *backscroll_buffer_size_adj = gtk_adjustment_new(5000, -1, 65535, 1, 100, 0);
+    GtkWidget *backscroll_buffer_size_select = gtk_spin_button_new(
+        GTK_ADJUSTMENT(backscroll_buffer_size_adj), 1, 0);  
+    GtkWidget *mod_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     GtkWidget *mod_label = gtk_label_new("Modifier:");
     GtkWidget *mod_ctrl_check = gtk_check_button_new_with_label("Ctrl");
     GtkWidget *mod_alt_check = gtk_check_button_new_with_label("Alt");
     GtkWidget *mod_shift_check = gtk_check_button_new_with_label("Shift");
     GtkWidget *mod_super_check = gtk_check_button_new_with_label("Super");
 
-    GtkWidget *close_hbox = gtk_hbox_new(FALSE, 0);
+    GtkWidget *close_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *close_button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 
     GtkWidget *dir_focus_check = gtk_check_button_new_with_label(
@@ -212,16 +275,27 @@ static void mssh_pref_init(MSSHPref* pref)
     gtk_box_pack_start(GTK_BOX(font_hbox), font_select, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(content), font_hbox, FALSE, TRUE, 0);
 
-    gtk_table_attach(GTK_TABLE(colour_table), bg_colour_label,
-        0, 1, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
-    gtk_table_attach(GTK_TABLE(colour_table), bg_colour_select,
-        1, 2, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
-    gtk_table_attach(GTK_TABLE(colour_table), fg_colour_label,
-        0, 1, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
-    gtk_table_attach(GTK_TABLE(colour_table), fg_colour_select,
-        1, 2, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+    gtk_grid_attach(GTK_GRID(colour_table), bg_colour_label,
+        0, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(colour_table), bg_colour_select,
+        1, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(colour_table), fg_colour_label,
+        0, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(colour_table), fg_colour_select,
+        1, 1, 1, 1);
     gtk_box_pack_start(GTK_BOX(content), colour_table, FALSE, TRUE, 0);
 
+    gtk_box_pack_start(GTK_BOX(content), recolor_focused_check, FALSE, TRUE, 0);
+
+    gtk_grid_attach(GTK_GRID(colour_table_focus), bg_colour_label_focus,
+        0, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(colour_table_focus), bg_colour_select_focus,
+        1, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(colour_table_focus), fg_colour_label_focus,
+        0, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(colour_table_focus), fg_colour_select_focus,
+        1, 1, 1, 1);
+    gtk_box_pack_start(GTK_BOX(content), colour_table_focus, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(content), exit_check, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(content), close_check, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(content), dir_focus_check, FALSE, TRUE, 0);
@@ -239,6 +313,12 @@ static void mssh_pref_init(MSSHPref* pref)
     gtk_box_pack_start(GTK_BOX(columns_hbox), columns_select, FALSE,
         TRUE, 0);
     gtk_box_pack_start(GTK_BOX(content), columns_hbox, FALSE, TRUE, 0);
+
+    gtk_box_pack_start(GTK_BOX(backscroll_buffer_size_hbox), backscroll_buffer_size_label, FALSE,
+        TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(backscroll_buffer_size_hbox), backscroll_buffer_size_select, FALSE,
+        TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(content), backscroll_buffer_size_hbox, FALSE, TRUE, 0);
 
     gtk_box_pack_start(GTK_BOX(mod_hbox), mod_label, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(mod_hbox), mod_ctrl_check, FALSE, TRUE, 0);
@@ -268,12 +348,20 @@ static void mssh_pref_init(MSSHPref* pref)
         G_CALLBACK(mssh_pref_fg_colour_select), NULL);
     g_signal_connect(G_OBJECT(bg_colour_select), "color-set",
         G_CALLBACK(mssh_pref_bg_colour_select), NULL);
+    g_signal_connect(G_OBJECT(fg_colour_select_focus), "color-set",
+        G_CALLBACK(mssh_pref_fg_colour_select_focus), NULL);
+    g_signal_connect(G_OBJECT(bg_colour_select_focus), "color-set",
+        G_CALLBACK(mssh_pref_bg_colour_select_focus), NULL);
     g_signal_connect(G_OBJECT(columns_select), "value-changed",
         G_CALLBACK(mssh_pref_columns_select), NULL);
+    g_signal_connect(G_OBJECT(backscroll_buffer_size_select), "value-changed",
+        G_CALLBACK(mssh_pref_backscroll_buffer_size_select), NULL);    
     g_signal_connect(G_OBJECT(timeout_select), "value-changed",
         G_CALLBACK(mssh_pref_timeout_select), NULL);
     g_signal_connect(G_OBJECT(close_check), "toggled",
         G_CALLBACK(mssh_pref_close_check), NULL);
+    g_signal_connect(G_OBJECT(recolor_focused_check), "toggled",
+        G_CALLBACK(mssh_pref_recolor_focused_check), NULL);
     g_signal_connect(G_OBJECT(exit_check), "toggled",
         G_CALLBACK(mssh_pref_exit_check), NULL);
      g_signal_connect(G_OBJECT(dir_focus_check), "toggled",
@@ -299,24 +387,44 @@ static void mssh_pref_init(MSSHPref* pref)
         TRUE, NULL);
     value = gconf_entry_get_value(entry);
     colour_s = gconf_value_get_string(value);
-    gdk_colormap_alloc_color(colour_map, &colour, TRUE, TRUE);
-    gdk_color_parse(colour_s, &colour);
-    gtk_color_button_set_color(GTK_COLOR_BUTTON(fg_colour_select),
+    gdk_rgba_parse(&colour, colour_s);
+    gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(fg_colour_select), 
         &colour);
 
     entry = gconf_client_get_entry(client, MSSH_GCONF_KEY_BG_COLOUR, NULL,
         TRUE, NULL);
     value = gconf_entry_get_value(entry);
     colour_s = gconf_value_get_string(value);
-    gdk_colormap_alloc_color(colour_map, &colour, TRUE, TRUE);
-    gdk_color_parse(colour_s, &colour);
-    gtk_color_button_set_color(GTK_COLOR_BUTTON(bg_colour_select),
+    gdk_rgba_parse(&colour, colour_s);
+    gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(bg_colour_select),
+        &colour);
+
+    entry = gconf_client_get_entry(client, MSSH_GCONF_KEY_FG_COLOUR_FOCUS, NULL,
+        TRUE, NULL);
+    value = gconf_entry_get_value(entry);
+    colour_s = gconf_value_get_string(value);
+    gdk_rgba_parse(&colour, colour_s);
+    gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(fg_colour_select_focus),
+        &colour);
+
+    entry = gconf_client_get_entry(client, MSSH_GCONF_KEY_BG_COLOUR_FOCUS, NULL,
+        TRUE, NULL);
+    value = gconf_entry_get_value(entry);
+    colour_s = gconf_value_get_string(value);
+    gdk_rgba_parse(&colour, colour_s);
+    gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(bg_colour_select_focus),
         &colour);
 
     entry = gconf_client_get_entry(client, MSSH_GCONF_KEY_COLUMNS, NULL,
         TRUE, NULL);
     value = gconf_entry_get_value(entry);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(columns_select),
+        gconf_value_get_int(value));
+
+    entry = gconf_client_get_entry(client, MSSH_GCONF_KEY_BACKSCROLL_BUFFER_SIZE, NULL,
+        TRUE, NULL);
+    value = gconf_entry_get_value(entry);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(backscroll_buffer_size_select),
         gconf_value_get_int(value));
 
     entry = gconf_client_get_entry(client, MSSH_GCONF_KEY_TIMEOUT, NULL,
@@ -329,6 +437,12 @@ static void mssh_pref_init(MSSHPref* pref)
         NULL, TRUE, NULL);
     value = gconf_entry_get_value(entry);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(close_check),
+        gconf_value_get_bool(value));
+
+    entry = gconf_client_get_entry(client, MSSH_GCONF_KEY_RECOLOR_FOCUSED,
+        NULL, TRUE, NULL);
+    value = gconf_entry_get_value(entry);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(recolor_focused_check),
         gconf_value_get_bool(value));
 
     entry = gconf_client_get_entry(client, MSSH_GCONF_KEY_QUIT_ALL_ENDED,
