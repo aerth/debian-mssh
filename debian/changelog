@@ -1,3 +1,9 @@
+mssh (2.0-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Hector Garcia <hector@debian.org>  Mon, 17 Mar 2014 10:12:12 +0100
+
 mssh (1.3-2) unstable; urgency=medium
 
   * Included Debain QA work which I accidentally missed.
