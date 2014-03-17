@@ -1,5 +1,7 @@
 #!/usr/bin/make -f
 
+export LDFLAGS=-Wl,--as-needed
+
 %:
 	dh $@ --with autotools-dev
 
