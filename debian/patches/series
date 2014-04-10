@@ -1,0 +1,2 @@
+remove_deprecated_gtk_widget_set_margin_left
+remove_deprecated_gtk_image_menu_item_new_from_stock
