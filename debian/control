@@ -8,10 +8,10 @@ Build-Depends: autotools-dev,
                libgconf2-dev,
                libgtk-3-dev,
                libvte-2.90-dev
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 Homepage: http://baloo.dyndns.biz
-Vcs-Git: git://baloo.dyndns.biz/mssh.git -b gtk2
-Vcs-Browser: http://baloo.dyndns.biz/gitweb/?p=mssh.git;a=shortlog;h=refs/heads/gtk2
+Vcs-Git: git://baloo.dyndns.biz/mssh.git
+Vcs-Browser: http://baloo.dyndns.biz/gitweb/?p=mssh.git;a=shortlog;h=refs/heads/master
 
 Package: mssh
 Architecture: any
