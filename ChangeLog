@@ -1,8 +1,23 @@
+2014-12-15 Héctor García  <hector@debian.org>
+
+	Integrated gettext support
+
+	Added Spanish translation
+
+	Bumped to version 2.1
+
 2014-12-12 Héctor García  <hector@debian.org>
 
 	Upgrade deprecated funtions to support GTK 3.14
 
 	Set the focus on the global entry only if the terminal closed has it.
+
+2014-03-19  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* Makefile.am (SUBDIRS): Add po.
+	(ACLOCAL_AMFLAGS): New variable.
+	(EXTRA_DIST): Add config.rpath, m4/ChangeLog.
+	* configure.ac (AC_OUTPUT): Add po/Makefile.in.
 
 2014-03-17  Héctor García  <hector@debian.org>
 
