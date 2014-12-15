@@ -2,7 +2,7 @@ mssh (2.1-1) unstable; urgency=low
 
   * New upstream version
 
- -- Hector Garcia <hector@debian.org>  Thu, 15 Decr 2014 11:16:21 +0200
+ -- Hector Garcia <hector@debian.org>  Thu, 15 Dec 2014 11:16:21 +0200
 
 mssh (2.0-2) unstable; urgency=low
 
