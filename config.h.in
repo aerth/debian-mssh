@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* The prefix for our gettext translation domains. */
+#undef GETTEXT_PACKAGE
+
 /* Name of package */
 #undef PACKAGE
 
