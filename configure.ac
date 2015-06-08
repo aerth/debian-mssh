@@ -1,4 +1,4 @@
-AC_INIT([MultiSSH], [2.1], [hector@debian.org], [mssh])
+AC_INIT([MultiSSH], [2.2], [hector@debian.org], [mssh])
 AM_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
 
@@ -16,7 +16,7 @@ IT_PROG_INTLTOOL(0.26)
 
 AC_PROG_CC
 
-PKG_CHECK_MODULES(MSSH, [gtk+-3.0 vte-2.90 gconf-2.0])
+PKG_CHECK_MODULES(MSSH, [gtk+-3.0 vte-2.91 gconf-2.0])
 AC_SUBST(MSSH_CFLAGS)
 AC_SUBST(MSSH_LIBS)
 
