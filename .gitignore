@@ -1,4 +1,3 @@
-INSTALL
 Makefile
 Makefile.in
 aclocal.m4
@@ -22,5 +21,4 @@ libtool
 ltmain.sh
 missing
 src/mssh
-src/Makefile.in
 stamp-h1
